@@ -57,48 +57,6 @@ char	*ft_strdup(const char *s1)
 	return (str);
 }
 
-char	*ft_substr(char const *s, unsigned int start, size_t len)
-{
-	unsigned int	lenn;
-	char			*str;
-	unsigned int	i;
-
-	if (!s)
-		return (NULL);
-	lenn = strlen(s);
-	if (len == 0 || start >= lenn)
-		return (calloc(1, sizeof(char)));
-	if (start + len > lenn)
-		len = lenn - start;
-	str = (char *)malloc((len + 1) * sizeof(char));
-	if (!str)
-		return (NULL);
-	i = 0;
-	while (i < len)
-	{
-		str[i] = s[i + start];
-		i++;
-	}
-	str[i] = '\0';
-	return (str);
-}
-
-int checkend(char *str)
-{
-    int i;
-
-    i = 0;
-    if (!str || str[i] == '\0')
-        return (0);
-    while(str[i])
-    {
-        if (str[i] == '\n')
-            return (1);
-        i++;
-    }
-    return (0);
-}
-
 t_list	*ft_lstlast(t_list *lst)
 {
 	if (!lst)
@@ -140,234 +98,207 @@ int	ft_lstsize(t_list *lst)
 	return (i);
 }
 
-void	ft_lstclear(t_list **lst)
+
+int checkend(char *str)
 {
-    t_list	*current;
-    t_list	*next_node;
-    char	*newline_pos;
-    int     i = 0;
-    char *restline;
-    if (!lst || !*lst)
-        return;
-    current = *lst;
-    while (current->next != NULL)
+    int i;
+
+    i = 0;
+    if (!str || str[i] == '\0')
+        return (0);
+    while(str[i])
     {
-        
-        next_node = current->next;
-        free(current->content); 
-        current->content = NULL;
-        free(current);
-        current = next_node;
-    }
-    while (current->content[i] != '\n' && current->content[i++] != '\0');
-    
-    if (current->content[i] == '\n')
+        if (str[i] == '\n' || str[i] == '\0')
+            return (1);
         i++;
-    restline = ft_strdup(current->content + i);
-    free(current->content);
-    free(current);
-    *lst = NULL;
-    ft_lstadd_back(lst, ft_lstnew(restline));
-    printf("%d\n", ft_lstsize(*lst));
+    }
+    return (0);
 }
-
-
-char *extractLine(t_list **lst, int fd)
+char *extractLine(t_list **lst, int count)
 {
-    t_list *current;
-    char *line = NULL;
-    int i = 0;
-    char *buffer = (char *)malloc(BUFFER_SIZE + 1);
-    int readedBytes;
+    char *line;
+    t_list *curr;
+    int i;
+    int j;
 
-    if (!buffer)
+    if (!*lst)
         return (NULL);
-    while ((readedBytes = read(fd, buffer, BUFFER_SIZE)) > 0)
-    {
-        buffer[readedBytes] = '\0'; 
-        ft_lstadd_back(lst, ft_lstnew(ft_strdup(buffer)));
-        if (checkend(buffer))
-            break;
-    }
-    
-    if (readedBytes < 0)
-    {
-        free(buffer);
-        return (NULL);
-    }
-
-    current = *lst;
-    int lineCount = 0;
-    while (current)
-    {
-        i = 0;
-        while (current->content[i])
-        {
-            if (current->content[i++] != '\n')
-                lineCount++;
-            else
-                break;
-        }
-        current = current->next;
-    } 
-    
-    line = (char *)malloc(lineCount + 1);  
+    curr = *lst;
+    line = malloc(count + 1);
+    i = 0;
+    j = 0;
     if (!line)
-    {
-        free(buffer);
         return (NULL);
-    }
-
-    int j = 0;
-    current = *lst;
-    while (current)
-    {
-        i = 0;
-        while (current->content[i])
-        {
-            if (current->content[i] == '\n')  
-            {
-                line[j] = '\0';
-                free(buffer);
-                ft_lstclear(lst);
-                return (line);
-            }
-            line[j++] = current->content[i++];
-            
-        }
-        // free(current->content);
-        current = current->next;
-    }
-    current = *lst;
-    // t_list *next_node;
-    // while (current)
-    // {
-    //     next_node = current->next;
-    //     // if (checkend(current->content))  
-    //     // {
-    //         current->content = NULL;
-    //         free(current->content);
-    //         free(current);
-    //     // }
-
-    //     current = next_node;
-    // }
-    // *lst = next_node;    
-    // printf("%d\n", ft_lstsize(*lst));
-    free(buffer);
+    if (!curr->content)
+        return (NULL);
+    line[count] = '\0';
+	while (curr)
+	{
+		j = 0;
+		while (curr->content[j])
+		{
+			line[i++] = curr->content[j++];
+			if (curr->content[j - 1] == '\n')
+				return (line);
+		}
+		curr = curr->next;
+	}
+    // printf("line: %s\n", line);
     return (line);
 }
 
+int lineCounting(t_list **lst)
+{
+    t_list *curr;
+    int lineCount;
+    int i;
 
-static int	is_trim(char s, char *set)
+    lineCount = 0;
+    curr = *lst;
+    if (!*lst)
+        return (0);
+    if (!curr->content)
+        return (0);
+    // printf("content: %s\n", curr->content);
+    while (curr)
+    {
+        i = 0;
+        while (curr->content[i])
+        {
+            if (curr->content[i] != '\n')
+                lineCount++;
+            i++;
+        }
+        curr = curr->next;
+    }
+    return (lineCount);
+}
+
+int	check_node(char *s)
 {
 	int	i;
 
 	i = 0;
-	while (set[i])
+    if (!s)
+        return (0);
+	while (s[i])
 	{
-		if (s == set[i])
+		if (s[i] == '\n')
 			return (1);
 		i++;
 	}
 	return (0);
 }
 
-char	*ft_strtrim(char const *s1, char const *set)
+void update_node(t_list **lst)
 {
-	size_t	i;
-	size_t	j;
-	char	*str;
+    t_list *curr;
+    int i;
 
-	if (!s1 || !set)
-		return (NULL);
-	i = 0;
-	j = ft_strlen(s1) - 1;
-	while (s1[i] && is_trim(s1[i], (char *)set))
-		i++;
-	while (s1[j] && is_trim(s1[j], (char *)set))
-		j--;
-	str = ft_substr(s1, i, (j - i + 1));
-	return (str);
+    curr = *lst;
+    if (!*lst)
+        return;
+    // printf("content: %s\n", curr->content);
+    while (curr)
+    {
+        i = 0;
+        while (curr->content[i])
+        {
+            if (curr->content[i] == '\n')
+            {
+                
+                char *new_content = strdup(curr->content + i + 1);
+                if (!new_content)
+                    return;
+                free(curr->content);
+                curr->content = new_content;
+                return;
+            }
+            i++;
+        }
+        curr = curr->next;
+        
+    }
+
 }
 
-// void ft_clean(t_list **lst)
-// {
-//     t_list *current;
-//     t_list *next_node;
-//     t_list *prev = NULL;
-//     int i = 0;
-//     current = *lst;
-//     while (current)
-//     {
-//         next_node = current->next;
-//         i = 0;
-//         while (current->content[i])
-//         {
-//             if (current->content[i] == '\n')
-//             {
-//                 // if (prev)
-//                 //     prev->next = next_node;
-//                 // else
-//                 ft_substr(current->content, i, strlen(current->content) - i);
-//                 *lst = next_node;
-                
-//                 // free(current->content);
-//                 // free(current);
-//                 break;
-//             }
-//             i++;
-//         }
-//         current = next_node;
-//     }
-// }
+
+void	clean_node(t_list **lst)
+{
+	t_list	*curr;
+    t_list	*tmp;
+
+    curr = *lst;
+	while (curr)
+	{
+		if (!check_node(curr->content))
+		{
+			free(curr->content);
+            curr->content = NULL;
+			tmp = curr->next;
+			free(curr);
+		}
+		else
+		{
+            update_node(lst);
+            break;
+		}
+        curr = tmp;
+	}
+    *lst = curr;
+}
+
+char *readLine(t_list **lst, int fd)
+{
+    char *buffer;
+    int readBytes;
+
+    buffer = malloc(BUFFER_SIZE + 1);
+    if (!buffer)
+        return (NULL);
+    while (1)
+    {
+        readBytes = read(fd, buffer, BUFFER_SIZE);
+        if (readBytes <= 0)
+        {
+            // free(buffer);
+            break;
+        }
+        buffer[readBytes] = '\0'; 
+
+        ft_lstadd_back(lst, ft_lstnew(strdup(buffer)));
+        if (checkend(buffer))
+            break;
+    }
+    free(buffer);
+    // printf("lineCount: %d\n", ft_lstsize(*lst));
+    return (extractLine(lst, lineCounting(lst)));
+}
 
 char *get_next_line(int fd)
 {
-    if (fd < 0 || BUFFER_SIZE < 0)
-        return (NULL);
     static t_list *lst;
-    // t_list *current, *new_node;
-    // buffer = malloc(BUFFER_SIZE + 1);
-    // if (!buffer)
-    //     return (NULL);
-    // int readedBytes = read(fd, buffer, BUFFER_SIZE);
-    // if (readedBytes < 0)
-    // {
-    //     free(buffer);
-    //     return (NULL);
-    // }
-    // new_node = ft_lstnew(buffer);
-    // if (!lst)
-    //     lst = new_node;
-    // else
-    // {
-    //     current = lst;
-    //     while (current->next)
-    //         current = current->next;
-    //     current->next = new_node;
-    // }
-    // printf("dsasdasdasd \n");
-    char *line = extractLine(&lst,fd);
-    // ft_clean(&lst);
-    
-    return(line);
+    char *line = readLine(&lst, fd);
+    clean_node(&lst);
+    return (line);
 }
-
-
 int main()
 {
-    int  fd = open("test.txt", O_RDONLY);
-    // get_next_line(fd);
-    // get_next_line(fd);
-    char *line = get_next_line(fd);
-    printf("%s\n", line);
-    free(line);
-    char *line2 = get_next_line(fd);
-    printf("%s\n", line2);
-    free(line2);
-    char *line3 = get_next_line(fd);
-    printf("%s\n", line3);
-    free(line3);
+    int fd = open("test.txt", O_RDONLY);
+    if (fd < 0)
+    {
+        perror("Error opening file");
+        return (1);
+    }
+
+    while (1)
+    {
+        char *line = get_next_line(fd);
+        if (!line)
+            break;
+        printf("%s", line);
+        free(line);
+    }
+    close(fd);
     return 0;
-}   
+}
