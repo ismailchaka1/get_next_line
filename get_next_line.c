@@ -125,25 +125,30 @@ char *extractLine(t_list **lst, int count)
         return (NULL);
     curr = *lst;
     line = malloc(count + 1);
-    i = 0;
-    j = 0;
     if (!line)
         return (NULL);
-    if (!curr->content)
-        return (NULL);
-    line[count] = '\0';
-	while (curr)
-	{
-		j = 0;
-		while (curr->content[j])
-		{
-			line[i++] = curr->content[j++];
-			if (curr->content[j - 1] == '\n')
-				return (line);
-		}
-		curr = curr->next;
-	}
-    // printf("line: %s\n", line);
+    i = 0;
+    while (curr)
+    {
+        if (!curr->content)
+        {
+            curr = curr->next;
+            continue;
+        }
+        j = 0;
+        while (curr->content[j] && i < count)
+        {
+            line[i++] = curr->content[j];
+            if (curr->content[j] == '\n')
+            {
+                line[i] = '\0';
+                return (line);
+            }
+            j++;
+        }
+        curr = curr->next;
+    }
+    line[i] = '\0'; 
     return (line);
 }
 
@@ -159,14 +164,14 @@ int lineCounting(t_list **lst)
         return (0);
     if (!curr->content)
         return (0);
-    // printf("content: %s\n", curr->content);
     while (curr)
     {
         i = 0;
         while (curr->content[i])
         {
+            lineCount++;
             if (curr->content[i] != '\n')
-                lineCount++;
+                break;
             i++;
         }
         curr = curr->next;
@@ -195,60 +200,70 @@ void update_node(t_list **lst)
     t_list *curr;
     int i;
 
-    curr = *lst;
-    if ( !lst || !*lst)
+    if (!*lst)
         return;
-    printf("content: %s\n", curr->content);
-    while (curr )
+
+    curr = *lst;
+    while (curr)
     {
-        i = 0;
-        while (curr->content && curr->content[i])
+        if (!curr->content)
+        {
+            curr = curr->next;
+            continue;
+        }
+
+        for (i = 0; curr->content[i]; i++)
         {
             if (curr->content[i] == '\n')
             {
-                
                 char *new_content = strdup(curr->content + i + 1);
                 if (!new_content)
                     return;
+                
                 free(curr->content);
                 curr->content = new_content;
-                return;
+                break;
             }
-            i++;
         }
         curr = curr->next;
-        
     }
-
 }
 
 
-void	clean_node(t_list **lst)
+void clean_node(t_list **lst)
 {
-	t_list	*curr;
-    t_list	*tmp;
+    t_list *curr;
+    t_list *prev;
+    t_list *tmp;
+
+    if (!*lst)
+        return;
 
     curr = *lst;
-	while (curr)
-	{
-        printf("content 111: %s\n", curr->content);
-		if (!check_node(curr->content))
-		{
-            curr->content = NULL;
-			free(curr->content);
-			tmp = curr->next;
-            curr->next = NULL;
-			free(curr);
-		}
-		else
-		{
-            printf("content 222: %s\n", curr->content);
+    prev = NULL;
+
+    while (curr)
+    {
+        if (!check_node(curr->content))
+        { 
+            // printf("content 111: %s\n", curr->content);
+            if (prev)
+                prev->next = curr->next;
+            else
+                *lst = curr->next;
+            free(curr->content);
+            tmp = curr->next;
+            free(curr);
+            
+            curr = tmp;
+        }
+        else
+        {
+            // printf("content 222: %s\n", curr->content);
             update_node(lst);
             break;
-		}
-        curr = tmp;
-	}
-    *lst = curr;
+        }
+    }
 }
 
 char *readLine(t_list **lst, int fd)
@@ -259,7 +274,7 @@ char *readLine(t_list **lst, int fd)
     buffer = malloc(BUFFER_SIZE + 1);
     if (!buffer)
         return (NULL);
-    while (*lst == NULL || !check_node((*lst)->content))
+    while (1)
     {
         readBytes = read(fd, buffer, BUFFER_SIZE);
         if (readBytes <= 0)
