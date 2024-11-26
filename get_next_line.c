@@ -196,13 +196,13 @@ void update_node(t_list **lst)
     int i;
 
     curr = *lst;
-    if (!*lst)
+    if ( !lst || !*lst)
         return;
-    // printf("content: %s\n", curr->content);
-    while (curr)
+    printf("content: %s\n", curr->content);
+    while (curr )
     {
         i = 0;
-        while (curr->content[i])
+        while (curr->content && curr->content[i])
         {
             if (curr->content[i] == '\n')
             {
@@ -231,15 +231,18 @@ void	clean_node(t_list **lst)
     curr = *lst;
 	while (curr)
 	{
+        printf("content 111: %s\n", curr->content);
 		if (!check_node(curr->content))
 		{
-			free(curr->content);
             curr->content = NULL;
+			free(curr->content);
 			tmp = curr->next;
+            curr->next = NULL;
 			free(curr);
 		}
 		else
 		{
+            printf("content 222: %s\n", curr->content);
             update_node(lst);
             break;
 		}
@@ -256,7 +259,7 @@ char *readLine(t_list **lst, int fd)
     buffer = malloc(BUFFER_SIZE + 1);
     if (!buffer)
         return (NULL);
-    while (1)
+    while (*lst == NULL || !check_node((*lst)->content))
     {
         readBytes = read(fd, buffer, BUFFER_SIZE);
         if (readBytes <= 0)

@@ -23,7 +23,7 @@ typedef struct s_list
 	struct s_list	*next;
 }					t_list;
 #ifndef BUFFER_SIZE
-    #define BUFFER_SIZE 1024
+    #define BUFFER_SIZE 10
 #endif
 
 #endif
