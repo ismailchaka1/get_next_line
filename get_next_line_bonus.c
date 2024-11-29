@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: chaka <chaka@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/28 19:34:43 by ichakank          #+#    #+#             */
-/*   Updated: 2024/11/30 00:54:20 by chaka            ###   ########.fr       */
+/*   Updated: 2024/11/30 00:56:15 by chaka            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 char	*extractline(char *str)
 {
@@ -98,13 +98,13 @@ char	*readline(char *buffer, int fd)
 
 char	*get_next_line(int fd)
 {
-	static char	*buffer;
+	static char	*buffer[1024];
 	char		*line;
 
-	if (fd < 0 || BUFFER_SIZE <= 0)
+	if (fd < 0 || BUFFER_SIZE <= 0 || fd > 1024)
 		return (NULL);
-	buffer = readline(buffer, fd);
-	line = extractline(buffer);
-	buffer = clearline(buffer);
+	buffer[fd] = readline(buffer[fd], fd);
+	line = extractline(buffer[fd]);
+	buffer[fd] = clearline(buffer[fd]);
 	return (line);
 }
