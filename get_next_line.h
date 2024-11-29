@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.h                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chaka <chaka@student.42.fr>                +#+  +:+       +#+        */
+/*   By: ichakank <ichakank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/19 20:15:18 by ichakank          #+#    #+#             */
-/*   Updated: 2024/11/27 17:00:15 by chaka            ###   ########.fr       */
+/*   Updated: 2024/11/28 20:05:51 by ichakank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,12 +23,12 @@ typedef struct s_list
 	struct s_list	*next;
 }					t_list;
 #ifndef BUFFER_SIZE
-    #define BUFFER_SIZE 42
+    #define BUFFER_SIZE 1
 #endif
 size_t	ft_strlen(const char *c);
+char	*ft_strjoin(char const *s1, char const *s2);
 char	*ft_strdup(const char *s1);
-int checkend(char *str);
-int	check_node(char *s);
+int checknewline(char *str);
 char *get_next_line(int fd);
 
 #endif
